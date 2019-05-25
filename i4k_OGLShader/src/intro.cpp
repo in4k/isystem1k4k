@@ -8,7 +8,7 @@
 #include <GL/gl.h>
 #include <math.h>
 #include "config.h"
-#include "ext.h"
+#include "system.h"
 #include "shader.inl"
 #include "fp.h"
 
@@ -18,9 +18,6 @@ static int   fsid;
 
 int intro_init( void )
 {
-    if( !EXT_Init() )
-        return 0;
-
     int vsid = oglCreateShaderProgramv( GL_VERTEX_SHADER,   1, &vsh );
         fsid = oglCreateShaderProgramv( GL_FRAGMENT_SHADER, 1, &fsh );
  
@@ -33,7 +30,7 @@ int intro_init( void )
     #ifdef DEBUG
         int		result;
         char    info[1536];
-        oglGetProgramiv( vsid, GL_LINK_STATUS, &result ); oglGetProgramInfoLog( vsid, 1024, NULL, (char *)info ); if( !result ) DebugBreak();
+        oglGetProgramiv( vsid, GL_LINK_STATUS, &result ); oglGetProgramInfoLog( vsid, 1024, NULL, (char *)info );  if( !result ) DebugBreak();
         oglGetProgramiv( fsid, GL_LINK_STATUS, &result ); oglGetProgramInfoLog( fsid, 1024, NULL, (char *)info ); if( !result ) DebugBreak();
         oglGetProgramiv( pid,  GL_LINK_STATUS, &result ); oglGetProgramInfoLog( pid,  1024, NULL, (char *)info ); if( !result ) DebugBreak();
     #endif
@@ -42,6 +39,7 @@ int intro_init( void )
 }
 
 //=================================================================================================================
+
 
 static float fparams[4*4];
 

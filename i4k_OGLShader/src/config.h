@@ -6,7 +6,7 @@
 #define _CONFIG_H_
 
 //#define CLEANDESTROY          // destroy stuff (windows, glContext, ...)
-#define XRES        800
-#define YRES        600
+#define XRES        1280
+#define YRES         720
 
 #endif

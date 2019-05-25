@@ -123,7 +123,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 //    oglCompileShader(v);
 //    oglAttachShader(p,v);
     int f = oglCreateShader(GL_FRAGMENT_SHADER);	
-    oglShaderSource(f, 1, &fragmentShader, 0);
+    oglShaderSource(f, 1, &fsh, 0);
     oglCompileShader(f);
     oglAttachShader(p,f);
     oglLinkProgram(p);

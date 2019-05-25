@@ -66,6 +66,16 @@ static const int wavHeader[11] = {
     0x61746164, 
     MZK_NUMSAMPLESC*sizeof(short) };
 
+static char *glFuncNames[] = {
+    "glCreateShaderProgramv",
+    "glGenProgramPipelines",
+    "glBindProgramPipeline",
+    "glUseProgramStages",
+    "glProgramUniform4fv",
+    //--
+	"glGetProgramiv",
+	"glGetProgramInfoLog" };
+
 //==============================================================================================
 
 static LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
@@ -119,7 +129,7 @@ static void window_end( WININFO *info )
     }
 }
 
-static int window_init( WININFO *info )
+static bool window_init( WININFO *info )
 {
 	unsigned int	PixelFormat;
     DWORD			dwExStyle, dwStyle;
@@ -136,7 +146,7 @@ static int window_init( WININFO *info )
     wc.hbrBackground =(HBRUSH)CreateSolidBrush(0x00102030);
 	
     if( !RegisterClass(&wc) )
-        return( 0 );
+        return false;
 
     if( info->full )
     {
@@ -147,7 +157,7 @@ static int window_init( WININFO *info )
         dmScreenSettings.dmPelsHeight = YRES;
 
         if( ChangeDisplaySettings(&dmScreenSettings,CDS_FULLSCREEN)!=DISP_CHANGE_SUCCESSFUL)
-            return( 0 );
+            return false;
 
         dwExStyle = WS_EX_APPWINDOW;
         dwStyle   = WS_VISIBLE | WS_POPUP;
@@ -175,30 +185,31 @@ static int window_init( WININFO *info )
                                rec.right-rec.left, rec.bottom-rec.top, 0, 0, info->hInstance, 0 );
 
     if( !info->hWnd )
-        return( 0 );
+        return false;
 
     if( !(info->hDC=GetDC(info->hWnd)) )
-        return( 0 );
+        return false;
 
     if( !(PixelFormat=ChoosePixelFormat(info->hDC,&pfd)) )
-        return( 0 );
+        return false;
 
     if( !SetPixelFormat(info->hDC,PixelFormat,&pfd) )
-        return( 0 );
+        return false;
 
     if( !(info->hRC=wglCreateContext(info->hDC)) )
-        return( 0 );
+        return false;
 
     if( !wglMakeCurrent(info->hDC,info->hRC) )
-        return( 0 );
+        return false;
 
-    return( 1 );
+    return true;
 }
 
 
 //==============================================================================================
 
 static short myMuzik[MZK_NUMSAMPLESC + 22];
+void *myglfunc[7];
 
 //==============================================================================================
 
@@ -216,14 +227,21 @@ int WINAPI WinMain( HINSTANCE instance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     {
         window_end( info );
         MessageBox( 0, "window_init()!","error",MB_OK|MB_ICONEXCLAMATION );
-        return( 0 );
+        return 0;
+    }
+
+    for( int i=0; i<7; i++ )
+    {
+        myglfunc[i] = wglGetProcAddress( glFuncNames[i] );
+        if( !myglfunc[i] )
+			return 0;
     }
 
     if( !intro_init() )
     {
         window_end( info );
         MessageBox( 0, "intro_init()!","error",MB_OK|MB_ICONEXCLAMATION );
-        return( 0 );
+        return 0;
     }
 
     mzk_init( myMuzik+22 );
@@ -233,7 +251,7 @@ int WINAPI WinMain( HINSTANCE instance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     {
         window_end( info );
         MessageBox( 0, "mzk???", "error", MB_OK|MB_ICONEXCLAMATION );
-        return( 0 );
+        return 0;
     }
 
     long to = timeGetTime();
@@ -260,7 +278,7 @@ int WINAPI WinMain( HINSTANCE instance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     sndPlaySound( 0, 0 );
     window_end( info );
 
-    return( 0 );
+    return 0;
 }
 
 

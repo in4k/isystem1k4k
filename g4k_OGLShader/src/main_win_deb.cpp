@@ -11,8 +11,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
-#include "intro.h"
 #include "main.h"
+#include "glext.h"
+#include "fragmentShader.inl"
 
 //==============================================================================================
 
@@ -52,6 +53,35 @@ static WININFO wininfo = {  0,0,0,0,0,
 							{'i','q','_',0}
                             };
 
+#define NUMFUNCIONES 11
+
+static float fparams[4*4];
+static void *myglfunc[NUMFUNCIONES];
+
+static const char *strs[] = {
+	"glCreateProgram",
+	"glCreateShader",
+	"glShaderSource",
+	"glCompileShader",
+	"glAttachShader",
+	"glLinkProgram",
+	"glUseProgram",
+    "glUniform4fv",
+    "glGetUniformLocation",
+	"glGetObjectParameterivARB",
+	"glGetInfoLogARB" };
+
+#define oglCreateProgram	            ((PFNGLCREATEPROGRAMPROC)myglfunc[0])
+#define oglCreateShader		            ((PFNGLCREATESHADERPROC)myglfunc[1])
+#define oglShaderSource                 ((PFNGLSHADERSOURCEPROC)myglfunc[2])
+#define oglCompileShader                ((PFNGLCOMPILESHADERPROC)myglfunc[3])
+#define oglAttachShader                 ((PFNGLATTACHSHADERPROC)myglfunc[4])
+#define oglLinkProgram                  ((PFNGLLINKPROGRAMPROC)myglfunc[5])
+#define oglUseProgram                   ((PFNGLUSEPROGRAMPROC)myglfunc[6])
+#define oglUniform4fv                   ((PFNGLUNIFORM4FVPROC)myglfunc[7])
+#define oglGetUniformLocation           ((PFNGLGETUNIFORMLOCATIONARBPROC)myglfunc[8])
+#define oglGetObjectParameteriv         ((PFNGLGETOBJECTPARAMETERIVARBPROC)myglfunc[9])
+#define oglGetInfoLog                   ((PFNGLGETINFOLOGARBPROC)myglfunc[10])
 
 //==============================================================================================
 
@@ -204,12 +234,40 @@ int WINAPI WinMain( HINSTANCE instance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return( 0 );
     }
 
-    if( !intro_compute() )
+    for( int i=0; i<NUMFUNCIONES; i++ )
     {
-        window_end( info );
-        MessageBox( 0, "intro_init()!","error",MB_OK|MB_ICONEXCLAMATION );
-        return( 0 );
+        myglfunc[i] = wglGetProcAddress( strs[i] );
+        if( !myglfunc[i] ) return( 0 );
     }
+
+    int pid = oglCreateProgram();                           
+	const int vsId = oglCreateShader( GL_VERTEX_SHADER ); 
+	const int fsId = oglCreateShader( GL_FRAGMENT_SHADER );
+	oglShaderSource( vsId, 1, &vertexShader, 0 );
+	oglShaderSource( fsId, 1, &fragmentShader, 0 );
+    oglCompileShader( vsId );
+    oglCompileShader( fsId );
+	oglAttachShader( pid, fsId );
+	oglAttachShader( pid, vsId );
+	oglLinkProgram( pid );
+
+	int		result;
+    char    error[1024];
+    oglGetObjectParameteriv( vsId, GL_OBJECT_COMPILE_STATUS_ARB, &result ); oglGetInfoLog( vsId, 1024, NULL, (char *)error ); if( !result ) DebugBreak();
+    oglGetObjectParameteriv( fsId, GL_OBJECT_COMPILE_STATUS_ARB, &result ); oglGetInfoLog( fsId, 1024, NULL, (char *)error ); if( !result ) DebugBreak();
+    oglGetObjectParameteriv( pid,  GL_OBJECT_LINK_STATUS_ARB,    &result ); oglGetInfoLog( pid,  1024, NULL, (char *)error ); if( !result ) DebugBreak();
+
+	fparams[ 0] = 0.0f;
+    fparams[ 1] = 0.0f;
+    fparams[ 2] = 0.0f;
+    fparams[ 3] = 0.0f;
+    fparams[ 4] = 0.0f;
+    fparams[ 5] = 0.0f;
+    fparams[ 6] = 0.0f;
+    fparams[ 7] = 0.0f;
+
+    oglUseProgram( pid );
+    oglUniform4fv( oglGetUniformLocation( pid, "fpar" ),  4, fparams );
 
     while( !done )
     {
@@ -221,6 +279,7 @@ int WINAPI WinMain( HINSTANCE instance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             DispatchMessage( &msg );
         }
 
+        glRects( -1, -1, 1, 1 );
         SwapBuffers( info->hDC );
         Sleep( 50 ); // give other processes some chance to do something
     }

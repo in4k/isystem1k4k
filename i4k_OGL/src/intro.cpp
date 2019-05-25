@@ -8,7 +8,7 @@
 #include <math.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-
+#include "system.h"
 #include "intro.h"
 #include "mzk.h"
 #include "fp.h"
@@ -78,7 +78,7 @@ void intro_do( long itime )
     const float ftime = 0.001f*(float)itime;
 
     // animate
-    float pos[3] = { 3.0f*cosf(ftime*p1d00), 
+    float pos[3] = { 3.0f*cosf(ftime*p1d01),  // do not make 1.0, otherwise sincos will be called
                      3.0f*cosf(ftime*p0d60), 
                      3.0f*sinf(ftime*p1d00) };
     float tar[3] = { 0.0f, 0.0f, 0.0f };

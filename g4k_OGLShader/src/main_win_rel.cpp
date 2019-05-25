@@ -5,9 +5,11 @@
 #define WIN32_LEAN_AND_MEAN
 #define WIN32_EXTRA_LEAN
 #include <windows.h>
-#include "intro.h"
+#include <GL/gl.h>
+#include <math.h>
 #include "main.h"
-
+#include "glext.h"
+#include "fragmentShader.inl"
 
 //----------------------------------------------------------------------------
 
@@ -62,10 +64,17 @@ void entrypoint( void )
     wglMakeCurrent(hDC,wglCreateContext(hDC));
 
     // init intro
-    intro_compute();
+    const unsigned int vsId = ((PFNGLCREATESHADERPROGRAMVPROC)wglGetProcAddress("glCreateShaderProgramv"))(GL_VERTEX_SHADER,   1, &vertexShader);
+    const unsigned int fsId = ((PFNGLCREATESHADERPROGRAMVPROC)wglGetProcAddress("glCreateShaderProgramv"))(GL_FRAGMENT_SHADER, 1, &fragmentShader);
+    unsigned int pid;
+	((PFNGLGENPROGRAMPIPELINESPROC)wglGetProcAddress("glGenProgramPipelines"))(1, &pid);
+    ((PFNGLBINDPROGRAMPIPELINEPROC)wglGetProcAddress("glBindProgramPipeline"))(pid);
+    ((PFNGLUSEPROGRAMSTAGESPROC)wglGetProcAddress("glUseProgramStages"))(pid, GL_VERTEX_SHADER_BIT, vsId);
+    ((PFNGLUSEPROGRAMSTAGESPROC)wglGetProcAddress("glUseProgramStages"))(pid, GL_FRAGMENT_SHADER_BIT, fsId);
 
     do 
     {
+        glRects( -1, -1, 1, 1 );
         wglSwapLayerBuffers( hDC, WGL_SWAP_MAIN_PLANE ); //SwapBuffers( hDC );
 		Sleep(50);
     }while ( !GetAsyncKeyState(VK_ESCAPE) );

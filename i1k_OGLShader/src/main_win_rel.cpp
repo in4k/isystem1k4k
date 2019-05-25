@@ -44,13 +44,9 @@ void entrypoint( void )
     wglMakeCurrent(hDC, wglCreateContext(hDC));
 
     // create shader
-    const int p = ((PFNGLCREATEPROGRAMPROC)wglGetProcAddress("glCreateProgram"))();
-    const int s = ((PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader"))(GL_FRAGMENT_SHADER);	
-    ((PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource"))(s, 1, &fragmentShader, 0);
-    ((PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader"))(s);
-    ((PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader"))(p,s);
-    ((PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram"))(p);
-    ((PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram"))(p);
+    ((PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram"))(
+    ((PFNGLCREATESHADERPROGRAMVPROC)wglGetProcAddress("glCreateShaderProgramv"))( 
+    GL_FRAGMENT_SHADER, 1, &fsh ));
 
     // run
     do

@@ -42,6 +42,14 @@ static DEVMODE screenSettings = { {0},
     #endif
     };
 
+static char *glFuncNames[] = {
+    "glCreateShaderProgramv",
+    "glGenProgramPipelines",
+    "glBindProgramPipeline",
+    "glUseProgramStages",
+    "glProgramUniform4fv" };
+
+
 #ifdef __cplusplus
 extern "C" 
 {
@@ -52,6 +60,7 @@ int  _fltused = 0;
 #endif
 
 static short myMuzik[MZK_NUMSAMPLESC+22];
+void *myglfunc[5];
 
 //----------------------------------------------------------------------------
 
@@ -68,6 +77,13 @@ void entrypoint( void )
     // initalize opengl
     if( !SetPixelFormat(hDC,ChoosePixelFormat(hDC,&pfd),&pfd) ) return;
     wglMakeCurrent(hDC,wglCreateContext(hDC));
+
+    for( int i=0; i<5; i++ )
+    {
+        myglfunc[i] = wglGetProcAddress( glFuncNames[i] );
+        if( !myglfunc[i] )
+			return;
+    }
 
     // init intro
     if( !intro_init() ) return;
